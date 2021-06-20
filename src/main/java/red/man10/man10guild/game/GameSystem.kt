@@ -12,7 +12,7 @@ object GameSystem {
 
     val guilds = ConcurrentHashMap<Int,Guild>()
 
-    private val gson = Gson()
+    val gson = Gson()
     lateinit var mysql : MySQLManager
 
 
@@ -43,6 +43,12 @@ object GameSystem {
 
     //Q.新規ギルドを作るとき、必ずどこか一つ土地を持っておくかどうか
     fun createGuild(leader:Player,subLeader:Player,guildName:String){
+
+        val initRegion = gson.toJson(mutableListOf<Int>())
+
+        mysql.execute("INSERT INTO guild_list (" +
+                "guild_name, leader_player, leader_uuid, sub_leader_player, sub_leader_uuid, region) VALUES " +
+                "('${guildName}', '${leader.name}', '${leader.uniqueId}', '${subLeader.name}', '${subLeader.uniqueId}', '${initRegion}')")
 
     }
 
