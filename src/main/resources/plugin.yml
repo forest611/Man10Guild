@@ -1,0 +1,10 @@
+name: Man10Guild
+version: 1.0
+main: red.man10.man10guild.Man10Guild
+api-version: 1.16
+softdepend:
+  - Man10CommonLibs
+  - Man10OfflineBank
+commands:
+  guild:
+    default: op
