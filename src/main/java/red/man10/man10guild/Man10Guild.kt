@@ -61,25 +61,28 @@ class Man10Guild : JavaPlugin() {
             "request" ->{
                 if (sender !is Player)return false
 
-                if (GameSystem.getJoinGuild(sender.uniqueId) != -1){
-                    sender.sendMessage("§c§lあなたはすでにギルドに入っています！")
-                    return true
-                }
-
-                if (GameSystem.getJoinGuild(sender.uniqueId) != -2){
-                    sender.sendMessage("§c§lあなたはすでにギルドに申請しています！")
-                    return true
-                }
-
-                val id = args[1].toIntOrNull()?:return true
-
-                if (!GameSystem.guilds.keys().toList().contains(id)){
-                    sender.sendMessage("§c§l存在しないギルドです！")
-                    return true
-                }
-
                 es.execute {
-                    GameSystem.joinRequest(sender.uniqueId,id)
+
+                    val status = GameSystem.getCurrentGuild(sender.uniqueId)
+
+                    if (status != -1){
+                        sender.sendMessage("§c§lあなたはすでにギルドに入っています！")
+                        return@execute
+                    }
+
+                    if (status == -2){
+                        sender.sendMessage("§c§lあなたはすでにギルドに申請しています！")
+                        return@execute
+                    }
+
+                    val id = args[1].toIntOrNull()?:return@execute
+
+                    if (!GameSystem.guilds.keys().toList().contains(id)){
+                        sender.sendMessage("§c§l存在しないギルドです！")
+                        return@execute
+                    }
+
+                    GameSystem.joinRequest(sender,id)
                     sender.sendMessage("§a§l参加申請をしました")
                 }
 
@@ -89,14 +92,14 @@ class Man10Guild : JavaPlugin() {
 
                 if (sender !is Player)return false
 
-                val id = GameSystem.getJoinGuild(sender.uniqueId)
-
-                if (id== -1){
-                    sender.sendMessage("§c§lあなたはどのギルドにも属していません！")
-                    return true
-                }
-
                 es.execute {
+
+                    val id = GameSystem.getCurrentGuild(sender.uniqueId)
+
+                    if (id == -1){
+                        sender.sendMessage("§c§lあなたはどのギルドにも属していません！")
+                        return@execute
+                    }
 
                     if (id == -2){
                         GameSystem.cancelRequest(sender.uniqueId)
@@ -192,7 +195,7 @@ class Man10Guild : JavaPlugin() {
                 }
 
                 es.execute {
-                    GameSystem.rejectRequest(uuid,id)
+                    GameSystem.rejectRequest(uuid)
                     sender.sendMessage("§a§l申請を拒否しました")
                 }
 

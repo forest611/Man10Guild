@@ -1,6 +1,7 @@
 package red.man10.man10guild.game
 
 import com.google.gson.Gson
+import org.bukkit.Bukkit
 import org.bukkit.OfflinePlayer
 import org.bukkit.entity.Player
 import red.man10.man10guild.Man10Guild
@@ -57,36 +58,55 @@ object GameSystem {
     }
 
     //ユーザーが参加してるギルドのテーブルに保存するが、メンバーフラグは立てない
-    fun joinRequest(user: UUID,id:Int){
+    fun joinRequest(p: Player,id:Int){
 
+        mysql.execute("INSERT INTO guild_player_list " +
+                "(player, uuid, guild_id, accept) VALUES ('${p.name}', '${p.uniqueId}', ${id}, 0);")
     }
 
     fun cancelRequest(user: UUID){
-
+        leaveGuild(user)
     }
 
     fun acceptRequest(user:UUID,id:Int){
-
+        mysql.execute("UPDATE guild_player_list SET accept = 1 " +
+                "WHERE id=${id} and uuid='${user}';")
     }
 
     //ギルド参加のリクエストを却下する
-    fun rejectRequest(user:UUID,id:Int){
-
+    fun rejectRequest(user:UUID){
+        leaveGuild(user)
     }
 
-    fun getJoinGuild(user:UUID):Int{
+    fun getCurrentGuild(user:UUID):Int{
 
-        return  -1
+        val rs = mysql.query("SELECT guild_id,accept from guild_player_list where uuid='${user}';")?:return -1
+        rs.next()
+
+        val id = if (rs.getInt("accept") == 0) -2 else rs.getInt("guild_id")
+
+        rs.close()
+        mysql.close()
+
+        return  id
     }
 
     fun leaveGuild(user:UUID){
-
+        mysql.execute("DELETE FROM guild_player_list where uuid='${user}';")
     }
 
     fun memberList(id:Int):MutableList<OfflinePlayer>{
 
         val list = mutableListOf<OfflinePlayer>()
 
+        val rs = mysql.query("select uuid from guild_player_list where id=${id};")?:return list
+
+        while (rs.next()){
+            list.add(Bukkit.getOfflinePlayer(UUID.fromString(rs.getString("uuid"))))
+        }
+
+        rs.close()
+        mysql.close()
 
         return list
     }
