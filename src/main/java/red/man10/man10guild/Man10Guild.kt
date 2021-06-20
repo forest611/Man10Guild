@@ -207,7 +207,7 @@ class Man10Guild : JavaPlugin() {
         return false
     }
 
-    fun loadConfig(){
+    private fun loadConfig(){
 
         guildCost = config.getDouble("guild_cost")
 
